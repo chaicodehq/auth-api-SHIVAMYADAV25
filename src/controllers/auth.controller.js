@@ -13,7 +13,28 @@ import { signToken } from '../utils/jwt.js';
  */
 export async function register(req, res, next) {
   try {
-    // Your code here
+    const  {name , email , password} =req.body;
+
+    if(!name || !email || !password){
+      const err = new Error("should require password field");
+      err.status = 400;
+      throw err;
+    }
+
+    const user = await User.findOne({email});
+
+    if(user) {
+      const err = new Error("Email already exists");
+      err.status = 409;
+      throw err;
+    }
+
+    const newUser = await User.create({name,email,password});
+
+    const userObj = newUser.toObject();
+    delete userObj.password
+
+    res.status(201).send({user : userObj});
   } catch (error) {
     next(error);
   }
@@ -33,9 +54,41 @@ export async function register(req, res, next) {
 export async function login(req, res, next) {
   try {
     // Your code here
+    const {email , password} = req.body;
+
+    if (!email || !password) {
+      const err = new Error("Email and password are required");
+      err.status = 400;
+      throw err;
+    }
+
+    const user = await User.findOne({email : email.toLowerCase()}).select("+password");
+
+    if (!user) {
+      const err = new Error("Invalid credentials");
+      err.status = 401;
+      throw err;
+    }
+
+    const compairedPassword = await bcrypt.compare(password,user.password);
+
+    if (!compairedPassword) {
+      const err = new Error("Invalid credentials");
+      err.status = 401;
+      throw err;
+    }
+
+    const jwtToken = signToken({userId : user._id , email : user.email , role : user.role});
+
+    const userObj = user.toObject();
+    delete userObj.password;
+
+    return res.status(200).json({token : jwtToken,user : userObj});
   } catch (error) {
     next(error);
   }
+
+
 }
 
 /**
@@ -46,7 +99,9 @@ export async function login(req, res, next) {
  */
 export async function me(req, res, next) {
   try {
-    // Your code here
+    res.status(200).json({
+      user : req.user
+    })
   } catch (error) {
     next(error);
   }

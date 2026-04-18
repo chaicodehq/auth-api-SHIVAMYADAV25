@@ -29,6 +29,8 @@ import jwt from 'jsonwebtoken';
  */
 export function signToken(payload) {
   // Your code here
+  const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn :process.env.JWT_EXPIRES_IN});
+  return token
 }
 
 /**
@@ -67,4 +69,6 @@ export function signToken(payload) {
  */
 export function verifyToken(token) {
   // Your code here
+  const verifiedToken = jwt.verify(token, process.env.JWT_SECRET)
+  return verifiedToken;
 }

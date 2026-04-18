@@ -16,6 +16,29 @@ import { notFound } from './middlewares/notFound.middleware.js';
  * 7. Add errorHandler middleware (must be last!)
  * 8. Return app
  */
+
 export function createApp() {
-  // Your code here
+  const app = express();
+
+  app.use(express.json({limit : "16kb"}));
+  app.use(express.urlencoded({extended : true , limit : "16kb"}))
+  app.use(express.static("public"));
+
+  app.get("/health",(req,res)=>{
+    res.send({
+       ok: true 
+    })
+  })
+  
+  app.use("/api/auth",authRoutes);
+
+  app.use("/api/users",userRoutes)
+
+  app.use(notFound);
+
+
+  app.use(errorHandler)
+
+  
+  return app
 }

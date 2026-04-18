@@ -1,5 +1,4 @@
 import { User } from '../models/user.model.js';
-
 /**
  * TODO: List all users (Admin only)
  *
@@ -8,7 +7,11 @@ import { User } from '../models/user.model.js';
  */
 export async function listUsers(req, res, next) {
   try {
-    // Your code here
+    const allUser = await User.find({});
+
+    return res.status(200).json({
+      users : allUser
+    })
   } catch (error) {
     next(error);
   }
@@ -24,7 +27,19 @@ export async function listUsers(req, res, next) {
  */
 export async function getUser(req, res, next) {
   try {
-    // Your code here
+    const id = req.params.id;
+
+    const user = await User.findById(id);
+
+    if(!user){
+      const err = new Error("User not found")
+      err.status = 404;
+      throw err;
+    }
+
+    return res.status(200).json({
+      user
+    })
   } catch (error) {
     next(error);
   }
@@ -40,7 +55,19 @@ export async function getUser(req, res, next) {
  */
 export async function deleteUser(req, res, next) {
   try {
-    // Your code here
+    const id = req.params.id;
+
+    const user = await User.findByIdAndDelete(id);
+
+    if(!user){
+      const err = new Error("User not found");
+      err.status= 404;
+      throw err;
+    }
+
+    return res.status(200).json({
+      message: "User deleted successfully"
+    })
   } catch (error) {
     next(error);
   }
